@@ -1,22 +1,20 @@
 import { router } from "expo-router";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React from "react";
+import { View, Text, StyleSheet, Button, TouchableOpacity } from "react-native";
 
-export default function Page() {
-  const handleSubmit = () => {
-    router.replace("/home");
-  };
+const FailedVerification = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{"سلام به اپلیکشین تست ما خوش آمدید!"}</Text>
-
+      <Text style={styles.header}>اعتبار سنجی با شکست مواجه شد!</Text>
+      <Text>ما نتوانستیم شماره تلفن شما را اعتبار سنجی کنیم لطفا دوباره تلاش کنید.</Text>
       <TouchableOpacity
         style={styles.button}
-        onPress={handleSubmit}>
-        <Text style={styles.buttonText}>ورود به برنامه</Text>
+        onPress={() => router.replace("/home")}>
+        <Text style={styles.buttonText}>{"تلاش دوباره"}</Text>
       </TouchableOpacity>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -34,6 +32,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 8,
+    marginTop: 8,
     backgroundColor: "#025864",
   },
   buttonText: {
@@ -42,3 +41,5 @@ const styles = StyleSheet.create({
     fontWeight: "semibold",
   },
 });
+
+export default FailedVerification;

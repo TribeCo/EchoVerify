@@ -2,9 +2,13 @@ import React, { useState } from "react";
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 
+const ApiToken = "JWmR6eNWA7thbBRGE0h6WqxlHkbgxZBvE7xtq";
+
 const Home = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [apiKey, setApiKey] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async () => {
     const phoneRegex = /^(\+98|0)?9\d{9}$/;
@@ -14,50 +18,70 @@ const Home = () => {
       return;
     }
 
+    if (apiKey.length < 1) {
+      setError("لطفا یک کلید دسترسی معتبر و فعال وارد کنید.");
+      return;
+    }
+
     setError("");
+
+    setIsLoading(true);
     try {
-      const response = await fetch("https://flashcall.liara.run/services/call/", {
+      const response = await fetch("https://flash-call.liara.run/services/call/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           destination: phoneNumber,
-          token: ".oMtDenPS7y.Zvm/GvIUcMgYkho8TnH6Fl/ju",
+          token: apiKey,
         }),
       });
-
       const data = await response.json();
+      console.log(data);
       alert(data.message);
 
-      if (data.message === "done") {
-        router.replace("/WaitingForCall");
+      if (data) {
+        router.replace(`/WaitingForCall?VerificationCode=${data.code}`);
       } else {
         alert(data.message);
       }
     } catch (error) {
       console.error("Error initiating call:", error);
       alert("در هنگام تماس خطایی رخ داد، لطفا دوباره تلاش کنید.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>{"لطفا شماره تلفن خود را وارد کنید."}</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="شماره تلفن همراه"
-        value={phoneNumber}
-        onChangeText={setPhoneNumber}
-        keyboardType="phone-pad"
-      />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleSubmit}>
-        <Text style={styles.buttonText}>{"ارسال کد تائید"}</Text>
-      </TouchableOpacity>
-    </View>
+    <>
+      <View style={styles.container}>
+        <Text style={styles.header}>{"لطفا شماره تلفن خود را وارد کنید."}</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="شماره تلفن همراه"
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
+          keyboardType="phone-pad"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="توکن سرویس خود را برای تست وارد کنید."
+          value={apiKey}
+          onChangeText={setApiKey}
+        />
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+        <TouchableOpacity
+          style={[styles.button, isLoading && styles.buttonDisabled]}
+          onPress={handleSubmit}
+          disabled={isLoading}>
+          <Text style={[styles.buttonText, isLoading && styles.textDisabled]}>
+            {isLoading ? "در حال ارسال..." : "ارسال کد تائید"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </>
   );
 };
 
@@ -74,6 +98,8 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   input: {
+    direction: "rtl",
+    textAlign: "right",
     height: 40,
     borderColor: "gray",
     borderWidth: 1,
@@ -98,6 +124,12 @@ const styles = StyleSheet.create({
     color: "red",
     fontSize: 12,
     marginBottom: 12,
+  },
+  buttonDisabled: {
+    backgroundColor: "#ccc",
+  },
+  textDisabled: {
+    color: "#666",
   },
 });
 
